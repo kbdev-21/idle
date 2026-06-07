@@ -49,10 +49,11 @@ export class Friendship {
   requester: User;
 }
 
+export type FriendshipStatus = "REQUESTING" | "FRIENDS";
+
 export const friendshipRelations: FindOptionsRelations<Friendship> = {
   user1: true,
   user2: true,
   requester: true,
 };
 
-export type FriendshipStatus = "REQUESTING" | "FRIENDS";

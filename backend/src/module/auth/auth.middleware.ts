@@ -1,6 +1,6 @@
 import {createMiddleware} from "hono/factory";
 import {HTTPException} from "hono/http-exception";
-import {getOrCreateUserById} from "../users/service/user.service.js";
+import {syncUser} from "../users/service/user.service.js";
 import {auth} from "../../core/auth.js";
 
 export const authMiddleware = createMiddleware(async (c, next) => {
@@ -21,9 +21,10 @@ export const authMiddleware = createMiddleware(async (c, next) => {
   }
 
   const userId = authUser.data.user.id;
+  const isAnonymous = authUser.data.user.is_anonymous ?? true;
 
   try {
-    const currentUser = await getOrCreateUserById(userId);
+    const currentUser = await syncUser(userId, isAnonymous);
     c.set("currentUser", currentUser);
   } catch (e) {
     throw new HTTPException(401, { message: "Unauthorized" });

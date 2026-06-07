@@ -17,24 +17,35 @@ export async function getUserById(id: string): Promise<User> {
   return user;
 }
 
-export async function getOrCreateUserById(id: string): Promise<User> {
+export async function syncUser(userId: string, isAnonymous: boolean): Promise<User> {
   const existingUser = await userRepo.findOne({
-    where: { id },
+    where: { id: userId },
     relations: userRelations,
   });
 
+  const newType = isAnonymous ? "GUEST" : "USER";
+
+  // update type
   if (existingUser) {
-    return existingUser;
+    if(existingUser.type !== "GUEST") return existingUser;
+    if(isAnonymous) return existingUser;
+
+    await userRepo.update(userId, {
+      type: newType,
+    });
+
+    return getUserById(userId);
   }
 
   const {name, avtUrl} = randomGuestIdentify();
   await userRepo.insert({
-    id: id,
+    id: userId,
     name: name,
-    avtUrl: avtUrl
+    avtUrl: avtUrl,
+    type: newType
   });
 
-  return getUserById(id);
+  return getUserById(userId);
 }
 
 export async function findUsers(search?: string, offset: number = 0, limit: number = 10): Promise<User[]> {

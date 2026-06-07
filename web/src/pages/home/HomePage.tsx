@@ -1,9 +1,9 @@
 import { Hash, WholeWord } from "lucide-react"
 
-import Footer from "@/components/layout/Footer"
-import Navbar from "@/components/layout/Navbar"
-import GameCard from "@/components/home/GameCard"
-import PlayerProfile from "@/components/home/PlayerProfile"
+import Footer from "@/components/layout/Footer.tsx"
+import Navbar from "@/components/layout/Navbar.tsx"
+import GameCard from "@/pages/home/GameCard.tsx"
+import PlayerProfile from "@/pages/home/PlayerProfile.tsx"
 
 const games = [
   {
