@@ -1,0 +1,41 @@
+import {Hono} from "hono";
+import {findFriendsByUserId, sendFriendRequest, acceptFriendRequest} from "../service/friend.service.js";
+import {authMiddleware} from "../../auth/auth.middleware.js";
+import type {AppTypes} from "../../../core/core-types.js";
+
+export const friendController = new Hono<{Variables: AppTypes}>();
+
+friendController.get("/api/users/me/friends",
+  authMiddleware,
+  async (c) => {
+    const currentUserId = c.get("currentUser").id;
+    const { search, offset, limit } = c.req.query();
+    const friends = await findFriendsByUserId(
+      currentUserId,
+      search,
+      offset ? Number(offset) : undefined,
+      limit ? Number(limit) : undefined,
+    );
+    return c.json(friends);
+  }
+);
+
+friendController.post("/api/add-friend/:userId",
+  authMiddleware,
+  async (c) => {
+    const requesterId = c.get("currentUser").id;
+    const receiverId = c.req.param("userId");
+    const friendship = await sendFriendRequest(requesterId, receiverId);
+    return c.json(friendship, 201);
+  }
+);
+
+friendController.post("/api/accept-friend-request/:friendshipId",
+  authMiddleware,
+  async (c) => {
+    const accepterId = c.get("currentUser").id;
+    const friendshipId = c.req.param("friendshipId");
+    const friendship = await acceptFriendRequest(friendshipId, accepterId);
+    return c.json(friendship);
+  }
+);

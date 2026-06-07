@@ -106,7 +106,7 @@ Unlike `GET` endpoints, `POST` has more many use cases, which leads to much more
 - `POST /transactions/{transactionId}/init` _(initialize a multi-step transaction flow)_
 - `POST /payments/{paymentId}/refund` _(trigger a refund request and its following steps)_
 
-**Request body:** Flexible - include only the fields relevant to the action
+**Request body/Path params/Query params:** Flexible - include the data relevant to the action
 
 **Response data:** The affected resource, or an object provides information about the action
 

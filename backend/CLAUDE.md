@@ -3,3 +3,6 @@
 - **Code Modification**: Only replace the specific code segments that require changes. Do not rewrite or overwrite the entire file to prevent unintended modifications.
 - **Context Verification**: Always inspect the current codebase before performing a task; do not rely on memory.
 - **Post-Task Review**: After execution, always confirm the actions taken and provide an objective critique (strengths, weaknesses, areas for improvement, etc.).
+- Always use `;`
+- **API Rules**: If the task is related to HTTP/API Layer, check `/backend/src/rule/API.md`
+- **Services Layout**: Always put the getSomethingById functions to the very top

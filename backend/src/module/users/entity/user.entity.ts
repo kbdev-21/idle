@@ -8,5 +8,8 @@ export class User {
   @Column({ type: "varchar" })
   name: string;
 
-  static readonly RELATIONS: FindOptionsRelations<User> = {}
+  @Column({ type: "varchar" })
+  avtUrl: string;
 }
+
+export const userRelations: FindOptionsRelations<User> = {};

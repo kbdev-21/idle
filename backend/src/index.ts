@@ -2,16 +2,18 @@ import 'reflect-metadata';
 import 'dotenv/config';
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import {appDataSource} from "./core/appDataSource.js";
-import {userController} from "./module/users/controller/userController.js";
-import type {User} from "./module/users/entity/User.js";
-import type {AppVariables} from "./core/AppVariables.js";
+import {dataSource} from "./core/data-source.js";
+import {userController} from "./module/users/controller/user.controller.js";
+import {friendController} from "./module/users/controller/friend.controller.js";
+import type {User} from "./module/users/entity/user.entity.js";
+import type {AppTypes} from "./core/core-types.js";
 
-const app = new Hono<{Variables: AppVariables}>();
+const app = new Hono<{Variables: AppTypes}>();
 
 app.route("/", userController);
+app.route("/", friendController);
 
-appDataSource.initialize().then(() => {
+dataSource.initialize().then(() => {
   serve({
     fetch: app.fetch,
     port: 3000
