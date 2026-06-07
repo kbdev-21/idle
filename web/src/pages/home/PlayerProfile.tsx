@@ -1,19 +1,25 @@
 import { Pencil, Hash, WholeWord } from "lucide-react"
 
+import type { User } from "@/api/user/api.ts"
+
 const stats = [
   { game: "5INAROW", score: "1,431", icon: Hash, color: "#3B5BDB" },
   { game: "BOMB", score: "1,130", icon: WholeWord, color: "#1B4332" },
 ]
 
-export default function PlayerProfile() {
+export default function PlayerProfile({ user }: { user?: User }) {
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-4xl">
-        🐝
+      <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-4xl">
+        {user?.avtUrl ? (
+          <img src={user.avtUrl} alt={user.name} className="h-full w-full object-cover" />
+        ) : (
+          "🐝"
+        )}
       </div>
 
       <div className="relative flex items-center justify-center">
-        <span className="text-xl font-bold">LazyGrizzle123</span>
+        <span className="text-xl font-bold">{user?.name ?? "..."}</span>
         <button className="absolute left-full ml-1.5 rounded-full p-1 text-muted-foreground hover:bg-black/5">
           <Pencil size={13} />
         </button>

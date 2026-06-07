@@ -13,7 +13,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="light">
           <App />
         </ThemeProvider>
       </BrowserRouter>
