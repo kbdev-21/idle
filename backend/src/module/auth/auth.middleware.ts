@@ -22,9 +22,10 @@ export const authMiddleware = createMiddleware(async (c, next) => {
 
   const userId = authUser.data.user.id;
   const isAnonymous = authUser.data.user.is_anonymous ?? true;
+  const email = authUser.data.user.email;
 
   try {
-    const currentUser = await syncUser(userId, isAnonymous);
+    const currentUser = await syncUser(userId, isAnonymous, email);
     c.set("currentUser", currentUser);
   } catch (e) {
     throw new HTTPException(401, { message: "Unauthorized" });

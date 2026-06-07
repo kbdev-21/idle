@@ -17,7 +17,7 @@ export async function getUserById(id: string): Promise<User> {
   return user;
 }
 
-export async function syncUser(userId: string, isAnonymous: boolean): Promise<User> {
+export async function syncUser(userId: string, isAnonymous: boolean, email?: string): Promise<User> {
   const existingUser = await userRepo.findOne({
     where: { id: userId },
     relations: userRelations,
@@ -32,6 +32,7 @@ export async function syncUser(userId: string, isAnonymous: boolean): Promise<Us
 
     await userRepo.update(userId, {
       type: newType,
+      email: email,
     });
 
     return getUserById(userId);

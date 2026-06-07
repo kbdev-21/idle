@@ -14,6 +14,9 @@ export class User {
   @Column({ type: "varchar" })
   avtUrl: string;
 
+  @Column({ type: "varchar", nullable: true, unique: true })
+  email: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

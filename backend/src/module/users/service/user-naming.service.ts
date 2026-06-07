@@ -23,7 +23,7 @@ const animals = [
   { name: "Rabbit", imgUrl: `${storageUrl}/storage/v1/object/public/avt/Rabbit.png` },
   { name: "Kitten", imgUrl: `${storageUrl}/storage/v1/object/public/avt/Kitten.png` },
   { name: "Grizzle", imgUrl: `${storageUrl}/storage/v1/object/public/avt/Grizzle.png` },
-  { name: "Panda", imgUrl: `${storageUrl}/storage/v1/object/public/avt/Panda.png` },
+  { name: "Hamster", imgUrl: `${storageUrl}/storage/v1/object/public/avt/Hamster.png` },
   { name: "Monkey", imgUrl: `${storageUrl}/storage/v1/object/public/avt/Monkey.png` },
 ];
 

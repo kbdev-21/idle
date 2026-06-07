@@ -20,7 +20,7 @@ friendController.get("/api/users/me/friends",
   }
 );
 
-friendController.post("/api/add-friend/:userId",
+friendController.post("/api/users/add-friend/:userId",
   authMiddleware,
   async (c) => {
     const requesterId = c.get("currentUser").id;
@@ -30,7 +30,7 @@ friendController.post("/api/add-friend/:userId",
   }
 );
 
-friendController.post("/api/accept-friend-request/:friendshipId",
+friendController.post("/api/users/accept-friend-request/:friendshipId",
   authMiddleware,
   async (c) => {
     const accepterId = c.get("currentUser").id;
