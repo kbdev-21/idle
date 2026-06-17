@@ -38,7 +38,7 @@ export default function PlayerProfile({ user }: { user?: User }) {
               <Icon size={14} className="text-white" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
                 {game}
               </span>
               <span className="text-sm font-bold">{score}</span>

@@ -37,10 +37,10 @@ export default function GameCard({ name, description, playing, color, icon: Icon
       </div>
 
       <h2 className="mt-5 text-5xl font-extrabold tracking-tight">{name}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+      <p className="mt-2 text-sm font-medium text-muted-foreground">{description}</p>
 
       <div className="mt-auto flex items-center justify-between pt-10">
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm font-medium text-muted-foreground">
           <span className="font-bold text-foreground">{playing.toLocaleString()}</span> playing
         </span>
         <button

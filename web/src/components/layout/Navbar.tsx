@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Moon, Sun, Volume2, VolumeX } from "lucide-react"
+import { Link } from "react-router-dom"
+import { Menu, Moon, Sun, Volume2, VolumeX } from "lucide-react"
 
 import GoogleIcon from "@/components/common/GoogleIcon.tsx"
 import { auth } from "@/core/auth.ts"
@@ -22,12 +23,17 @@ export default function Navbar() {
   const isLoggedIn = !!session && !session.user.is_anonymous;
 
   return (
-    <nav className="mx-auto flex max-w-[1100px] items-center justify-between px-4 py-5">
-      <div className="flex items-baseline">
-        <span className="text-lg font-bold tracking-tight">Idle</span>
-        <span className="text-lg font-medium text-muted-foreground">.gg</span>
+    <nav className="mx-auto flex w-full max-w-[1100px] items-center justify-between px-4 py-5">
+      <div className="flex items-center gap-2">
+        <button className="rounded-full p-2 transition-colors hover:bg-black/5">
+          <Menu size={18} />
+        </button>
+        <Link to="/" className="flex items-baseline">
+          <span className="text-lg font-bold tracking-tight">Idle</span>
+          <span className="text-lg font-medium text-muted-foreground">.gg</span>
+        </Link>
       </div>
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
         <button
           onClick={() => setIsDark((v) => !v)}
           className="rounded-full p-2 transition-colors hover:bg-black/5"
@@ -46,14 +52,14 @@ export default function Navbar() {
               await auth.signOut();
               window.location.reload();
             }}
-            className="hover:text-foreground transition-colors"
+            className="hover:text-foreground transition-colors font-medium"
           >
             Log out
           </button>
         ) : (
           <button
             onClick={() => setIsSignInOpen(true)}
-            className="hover:text-foreground transition-colors"
+            className="hover:text-foreground transition-colors font-medium"
           >
             Sign in
           </button>

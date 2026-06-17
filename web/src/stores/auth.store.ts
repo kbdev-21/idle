@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Session } from "@supabase/supabase-js";
 import { auth } from "@/core/auth.ts";
+import { realtime } from "@/core/websocket.ts";
 
 type AuthState = {
   session: Session | null;
@@ -21,8 +22,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     const { data: { subscription } } = auth.onAuthStateChange(async (_event, session) => {
       set({ session });
 
-      // (2)(3) chỉ signIn khi thật sự chưa có session và không có request nào đang chạy
-      if (!session && !isSigningIn) {
+      // (2) có session -> đảm bảo luôn có đúng 1 websocket (connect idempotent)
+      if (session) {
+        realtime.connect(session.access_token);
+        return;
+      }
+
+      // (3) chỉ signIn khi thật sự chưa có session và không có request nào đang chạy
+      if (!isSigningIn) {
         isSigningIn = true;
         try {
           await auth.signInAnonymously();
@@ -34,6 +41,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     unsubscribe = () => {
       subscription.unsubscribe();
+      realtime.disconnect();
       unsubscribe = null;
     };
     return unsubscribe;

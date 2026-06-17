@@ -1,44 +1,62 @@
-import { useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
-import { toast } from "sonner";
+import { useEffect, type ReactNode } from "react";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 
 import { Toaster } from "@/components/ui/sonner.tsx";
 import { useAuthStore } from "@/stores/auth.store.ts";
+import { useCaroStore } from "@/stores/caro.store.ts";
+import { useAuthRedirectError } from "@/hooks/useAuthRedirectError.ts";
+import { useRealtimeListener } from "@/hooks/useRealtimeListener.ts";
+import PageLayout from "@/components/layout/PageLayout.tsx";
 import HomePage from "@/pages/home/HomePage.tsx";
+import CaroLobbyPage from "@/pages/caro/CaroLobbyPage.tsx";
+import CaroGamePage from "@/pages/caro-game/CaroGamePage.tsx";
+
+// Không trong game mà vào /caro/game -> đẩy về lobby.
+// (persist rehydrate đồng bộ nên F5 giữa game không bị đẩy nhầm)
+function RequireGame({ children }: { children: ReactNode }) {
+  const room = useCaroStore((s) => s.room);
+  if (!room) return <Navigate to="/caro" replace />;
+  return children;
+}
+
+// Đang chơi dở (room persist, status playing) -> mọi lần mount app đều vào trang game.
+// Game đã kết thúc thì không ép quay lại (xem kết quả xong rời bình thường).
+function useResumeCaroGame() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (useCaroStore.getState().room?.state.status === "playing") {
+      navigate("/caro/play", { replace: true });
+    }
+  }, [navigate]);
+}
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
+
+  useRealtimeListener();
+  useAuthRedirectError();
+  useResumeCaroGame();
 
   useEffect(() => {
     const cleanup = init();
     return cleanup;
   }, [init]);
 
-  useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const queryParams = new URLSearchParams(window.location.search);
-    const errorCode = hashParams.get("error_code") ?? queryParams.get("error_code");
-    const errorDescription =
-      hashParams.get("error_description") ?? queryParams.get("error_description");
-
-    if (!errorCode && !errorDescription) {
-      return;
-    }
-
-    if (errorCode === "identity_already_exists") {
-      toast.error("This Google account is already used. Sign in instead.");
-    } else if (errorDescription) {
-      toast.error(decodeURIComponent(errorDescription.replace(/\+/g, " ")));
-    }
-
-    // clean the error params out of the URL
-    window.history.replaceState(null, "", window.location.pathname);
-  }, []);
-
   return (
     <>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route element={<PageLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/caro" element={<CaroLobbyPage />} />
+          <Route
+            path="/caro/play"
+            element={
+              <RequireGame>
+                <CaroGamePage />
+              </RequireGame>
+            }
+          />
+        </Route>
       </Routes>
       <Toaster />
     </>
