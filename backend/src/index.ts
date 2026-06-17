@@ -4,10 +4,11 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import {dataSource} from "./core/data-source.js";
-import {userController} from "./module/users/controller/user.controller.js";
-import {friendController} from "./module/users/controller/friend.controller.js";
-import type {User} from "./module/users/entity/user.entity.js";
-import type {AppTypes} from "./core/core-types.js";
+import {userRouter} from "./module/users/router/user.router.js";
+import {friendRouter} from "./module/users/router/friend.router.js";
+import type {AppTypes} from "./core/types.js";
+import {caroRouter} from "./module/caro/caro.router.js";
+import {handleWsUpgrade} from "./module/websocket/websocket.manager.js";
 
 const app = new Hono<{Variables: AppTypes}>();
 
@@ -17,17 +18,21 @@ app.use("*", cors({
   allowHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.route("/", userController);
-app.route("/", friendController);
+app.route("/", userRouter);
+app.route("/", friendRouter);
+app.route("/", caroRouter);
 
-dataSource.initialize().then(() => {
-  serve({
-    fetch: app.fetch,
-    port: 3000
-  }, (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`)
-  })
-}).catch((err) => {
-  console.error("Failed to connect to database:", err);
-  process.exit(1);
+await dataSource.initialize();
+
+const server = serve({
+  fetch: app.fetch,
+  port: 3000
+}, (info) => {
+  console.log(`Server is running on http://localhost:${info.port}`)
+});
+
+server.on("upgrade", (req, socket, head) => {
+  handleWsUpgrade(req, socket, head).catch(() => {
+    socket.destroy();
+  });
 });

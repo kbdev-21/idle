@@ -1,11 +1,11 @@
 import {Hono} from "hono";
 import {findFriendsByUserId, sendFriendRequest, acceptFriendRequest} from "../service/friend.service.js";
 import {authMiddleware} from "../../auth/auth.middleware.js";
-import type {AppTypes} from "../../../core/core-types.js";
+import type {AppTypes} from "../../../core/types.js";
 
-export const friendController = new Hono<{Variables: AppTypes}>();
+export const friendRouter = new Hono<{Variables: AppTypes}>();
 
-friendController.get("/api/users/me/friends",
+friendRouter.get("/api/users/me/friends",
   authMiddleware,
   async (c) => {
     const currentUserId = c.get("currentUser").id;
@@ -20,7 +20,7 @@ friendController.get("/api/users/me/friends",
   }
 );
 
-friendController.post("/api/users/add-friend/:userId",
+friendRouter.post("/api/users/add-friend/:userId",
   authMiddleware,
   async (c) => {
     const requesterId = c.get("currentUser").id;
@@ -30,7 +30,7 @@ friendController.post("/api/users/add-friend/:userId",
   }
 );
 
-friendController.post("/api/users/accept-friend-request/:friendshipId",
+friendRouter.post("/api/users/accept-friend-request/:friendshipId",
   authMiddleware,
   async (c) => {
     const accepterId = c.get("currentUser").id;

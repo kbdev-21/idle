@@ -1,11 +1,11 @@
 import {Hono} from "hono";
 import {getUserById, findUsers} from "../service/user.service.js";
 import {authMiddleware} from "../../auth/auth.middleware.js";
-import type {AppTypes} from "../../../core/core-types.js";
+import type {AppTypes} from "../../../core/types.js";
 
-export const userController = new Hono<{Variables: AppTypes}>();
+export const userRouter = new Hono<{Variables: AppTypes}>();
 
-userController.get("/api/users/me",
+userRouter.get("/api/users/me",
   authMiddleware,
   async (c) => {
     const currentUser = c.get("currentUser");
@@ -13,7 +13,7 @@ userController.get("/api/users/me",
   }
 );
 
-userController.get("/api/users",
+userRouter.get("/api/users",
   authMiddleware,
   async (c) => {
     const {
@@ -32,7 +32,7 @@ userController.get("/api/users",
   }
 );
 
-userController.get("/api/users/:userId",
+userRouter.get("/api/users/:userId",
   authMiddleware,
   async (c) => {
     const userId = c.req.param("userId");
