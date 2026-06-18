@@ -1,4 +1,4 @@
-import type {User} from "../module/users/entity/user.entity.js";
+import type {User} from "../module/users/service/user.service.js";
 
 export type AppTypes = {
   currentUser: User
