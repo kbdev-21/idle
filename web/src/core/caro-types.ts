@@ -22,4 +22,5 @@ export type CaroRoom = {
   oRating: number;
   oRatingAfter: number | null;
   state: CaroGameState;
+  lastMoveAt: number;
 };

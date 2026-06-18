@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog.tsx"
 
 const SIZE = 15
+const TURN_TIME_LIMIT = 20 // giây, mirror backend TURN_TIME_LIMIT_MS
 
 const MARK_COLOR: Record<CaroSide, string> = {
   X: "#3B5BDB",
@@ -43,6 +44,14 @@ export default function CaroGamePage() {
     if (gameStatus === "playing") setWatching(false)
   }, [gameStatus])
 
+  // countdown lượt: tick mỗi 250ms khi đang chơi, client tự tính từ lastMoveAt
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (gameStatus !== "playing") return
+    const id = setInterval(() => setNow(Date.now()), 250)
+    return () => clearInterval(id)
+  }, [gameStatus])
+
   // RequireGame đảm bảo có room khi render, nhưng vẫn guard cho chắc type
   if (!room) return null
 
@@ -50,6 +59,12 @@ export default function CaroGamePage() {
   const mySide: CaroSide = room.xPlayerId === user?.id ? "X" : "O"
   const oppSide: CaroSide = mySide === "X" ? "O" : "X"
   const isMyTurn = status === "playing" && turnOf === mySide
+
+  // tỉ lệ thời gian còn lại của lượt hiện tại (0..1) cho thanh của người đang active
+  const turnProgress =
+    status === "playing"
+      ? Math.max(0, TURN_TIME_LIMIT - (now - room.lastMoveAt) / 1000) / TURN_TIME_LIMIT
+      : 1
 
   const handleCellClick = (x: number, y: number) => {
     if (!isMyTurn) return
@@ -87,6 +102,7 @@ export default function CaroGamePage() {
           avatarUrl={opponent?.avtUrl}
           avatarFallback="🦊"
           active={status === "playing" && turnOf === oppSide}
+          progress={turnProgress}
         />
 
         {/* board */}
@@ -123,12 +139,14 @@ export default function CaroGamePage() {
           avatarUrl={user?.avtUrl}
           avatarFallback="🐝"
           active={isMyTurn}
+          progress={turnProgress}
         />
       </div>
 
       <button
         onClick={handleLeave}
-        className="mt-2 rounded-full border border-gray-300 px-5 py-2 text-sm font-bold text-muted-foreground transition-colors hover:bg-gray-100"
+        disabled={!gameOver}
+        className="mt-2 rounded-full border border-gray-300 px-5 py-2 text-sm font-bold text-muted-foreground transition-colors enabled:hover:bg-gray-100 disabled:opacity-50"
       >
         Leave
       </button>
@@ -197,12 +215,15 @@ type PlayerBarProps = {
   avatarUrl?: string
   avatarFallback: string
   active?: boolean
+  progress?: number
 }
 
-function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active }: PlayerBarProps) {
+function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active, progress }: PlayerBarProps) {
+  // chỉ người đang active mới đếm ngược; người còn lại giữ thanh đầy (xám)
+  const width = active && progress !== undefined ? `${progress * 100}%` : "100%"
   return (
-    <div className="flex items-center gap-3">
-      {/* combo: avatar trái + (name trên / rating dưới) phải */}
+    <div className="flex flex-col gap-3">
+      {/* hàng info: avatar + (name/rating) bên trái, mark badge đẩy về phải */}
       <div className="flex items-center gap-2.5">
         <div
           className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xl"
@@ -219,24 +240,23 @@ function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active }: Pl
           <span className="font-bold">{name}</span>
           <span className="text-sm font-medium text-muted-foreground">{rating.toLocaleString()}</span>
         </div>
-      </div>
 
-      {/* mark badge bên phải */}
-      <div
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white"
-        style={{ backgroundColor: MARK_COLOR[mark] }}
-      >
-        {mark === "X" ? <X size={16} strokeWidth={3} /> : <Circle size={13} strokeWidth={3} />}
-      </div>
-
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200">
+        {/* mark badge đẩy sát mép phải để thẳng hàng với đuôi thanh time */}
         <div
-          className="h-full rounded-full"
-          style={{ width: "100%", backgroundColor: active ? MARK_COLOR[mark] : "#D1D5DB" }}
+          className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-white"
+          style={{ backgroundColor: MARK_COLOR[mark] }}
+        >
+          {mark === "X" ? <X size={16} strokeWidth={3} /> : <Circle size={13} strokeWidth={3} />}
+        </div>
+      </div>
+
+      {/* thanh time full-width, luôn cùng điểm đầu + cùng độ dài giữa 2 player */}
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+        <div
+          className="h-full rounded-full transition-[width] duration-200 ease-linear"
+          style={{ width, backgroundColor: active ? MARK_COLOR[mark] : "#D1D5DB" }}
         />
       </div>
-
-
     </div>
   )
 }
