@@ -41,11 +41,10 @@ export async function syncUser(userId: string, isAnonymous: boolean, email?: str
   const newType = isAnonymous ? "GUEST" : "USER";
 
   if(existingUser) {
-    if(existingUser.type !== "GUEST") return existingUser;
     if(isAnonymous) return existingUser;
 
     await db.update(users).set({
-      type: newType,
+      type: existingUser.type === "ADMIN" ? "ADMIN" : newType,
       email: email
     }).where(eq(users.id, existingUser.id));
 
