@@ -130,14 +130,14 @@ export function sendToUser(userId: string, message: ServerMessage): boolean {
 }
 
 function sendToRoom(room: CaroRoom, message: ServerMessage) {
-  sendToUser(room.players.X, message);
-  sendToUser(room.players.O, message);
+  sendToUser(room.xPlayerId, message);
+  sendToUser(room.oPlayerId, message);
 }
 
 // ===== Message handlers =====
 
-function handleCaroMatchmaking(ws: AppWebSocket) {
-  const room = caroMatchmaking.joinCaroQueue(ws.userId);
+async function handleCaroMatchmaking(ws: AppWebSocket) {
+  const room = await caroMatchmaking.joinCaroQueue(ws.userId);
   if(room === false) {
     ws.send(JSON.stringify({type: "ERROR", data: {message: "Already in queue or playing"}}));
     return;
@@ -151,8 +151,8 @@ function handleCaroCancelMatchmaking(ws: AppWebSocket) {
   caroMatchmaking.leftCaroQueue(ws.userId);
 }
 
-function handleCaroPlayTurn(ws: AppWebSocket, x: number, y: number) {
-  const room = caroRoom.playTurn(ws.userId, x, y);
+async function handleCaroPlayTurn(ws: AppWebSocket, x: number, y: number) {
+  const room = await caroRoom.playTurn(ws.userId, x, y);
   if(!room) {
     ws.send(JSON.stringify({type: "ERROR", data: {message: "Invalid move"}}));
     return;
