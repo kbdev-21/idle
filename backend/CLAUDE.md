@@ -6,3 +6,4 @@
 - Always use `;`
 - **API Rules**: If the task is related to HTTP/API Layer, check `/backend/src/rule/API.md`
 - **Services Layout**: Always put the getSomethingById functions to the very top
+- **General File Layout**: Always put the private functions (not export) to the bottom

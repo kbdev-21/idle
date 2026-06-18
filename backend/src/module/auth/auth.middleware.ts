@@ -23,7 +23,6 @@ export const authMiddleware = createMiddleware(async (c, next) => {
   const userId = authUser.data.user.id;
   const isAnonymous = authUser.data.user.is_anonymous ?? true;
   const email = authUser.data.user.email;
-  console.log(email);
 
   try {
     const currentUser = await syncUser(userId, isAnonymous, email);

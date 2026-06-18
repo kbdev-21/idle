@@ -122,7 +122,7 @@ function routeMessage(ws: AppWebSocket, message: ClientMessage) {
 }
 
 // ===== Send helpers =====
-export function sendToUser(userId: string, message: ServerMessage): boolean {
+function sendToUser(userId: string, message: ServerMessage): boolean {
   const ws = connectedUser.get(userId);
   if(!ws) return false;
   ws.send(JSON.stringify(message));
@@ -133,6 +133,17 @@ function sendToRoom(room: CaroRoom, message: ServerMessage) {
   sendToUser(room.xPlayerId, message);
   sendToUser(room.oPlayerId, message);
 }
+
+function broadcastRoomState(room: CaroRoom) {
+  if(room.state.status === "playing") sendToRoom(room, {type: "CARO:GAME_STATE", data: room});
+  else sendToRoom(room, {type: "CARO:GAME_OVER", data: room});
+}
+
+// Tick: quét timeout mỗi giây -> random move cho người hết giờ rồi broadcast
+setInterval(async () => {
+  const affected = await caroRoom.processTimeouts(Date.now());
+  for(const room of affected) broadcastRoomState(room);
+}, 1000);
 
 // ===== Message handlers =====
 
@@ -158,10 +169,5 @@ async function handleCaroPlayTurn(ws: AppWebSocket, x: number, y: number) {
     return;
   }
 
-  if(room.state.status === "playing") {
-    sendToRoom(room, {type: "CARO:GAME_STATE", data: room});
-  }
-  else {
-    sendToRoom(room, {type: "CARO:GAME_OVER", data: room});
-  }
+  broadcastRoomState(room);
 }

@@ -4,7 +4,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import {userRouter} from "./module/users/router/user.router.js";
 import type {AppTypes} from "./core/types.js";
-import {caroRouter} from "./module/caro/caro.router.js";
+import {caroRouter} from "./module/caro/router/caro.router.js";
 import {handleWsUpgrade} from "./module/websocket/websocket.manager.js";
 
 const app = new Hono<{Variables: AppTypes}>();
