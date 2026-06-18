@@ -5,8 +5,8 @@ import {auth} from "../../core/auth.js";
 import {
   type CaroMatch,
   getCaroMatchByUserId, makeCaroMove,
-  processTimeoutsForCurrentCaroMatches
-} from "../caro/caro-match.service.js";
+  processTimeoutsForCurrentCaroMatches, toClientPayload
+} from "../caro/caro-matches-management.service.js";
 import type {AppWebSocket, ClientMessage, ServerMessage} from "./types.js";
 import {joinCaroQueue, leftCaroQueue} from "../caro/caro-matchmaking.service.js";
 
@@ -55,7 +55,7 @@ wss.on("connection", (ws: AppWebSocket) => {
   // Resume: user đang trong match (vd vừa F5) -> gửi lại state hiện tại
   const match = getCaroMatchByUserId(ws.userId);
   if(match) {
-    sendToUser(ws.userId, {type: "CARO:GAME_STATE", data: match});
+    sendToUser(ws.userId, {type: "CARO:GAME_STATE", data: toClientPayload(match)});
   }
 
   ws.on("message", (raw) => {
@@ -138,8 +138,9 @@ function sendToMatch(match: CaroMatch, message: ServerMessage) {
 }
 
 function broadcastMatchState(match: CaroMatch) {
-  if(match.state.status === "playing") sendToMatch(match, {type: "CARO:GAME_STATE", data: match});
-  else sendToMatch(match, {type: "CARO:GAME_OVER", data: match});
+  const data = toClientPayload(match); // bỏ statesHistory, chỉ gửi state hiện tại
+  if(match.state.status === "playing") sendToMatch(match, {type: "CARO:GAME_STATE", data});
+  else sendToMatch(match, {type: "CARO:GAME_OVER", data});
 }
 
 // Tick: quét timeout mỗi giây -> random move cho người hết giờ rồi broadcast
@@ -158,7 +159,7 @@ async function handleCaroMatchmaking(ws: AppWebSocket) {
   }
   if(match === null) return;
 
-  sendToMatch(match, {type: "CARO:MATCH_FOUND", data: match});
+  sendToMatch(match, {type: "CARO:MATCH_FOUND", data: toClientPayload(match)});
 }
 
 function handleCaroCancelMatchmaking(ws: AppWebSocket) {

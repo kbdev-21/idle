@@ -9,7 +9,7 @@ const userFullRelations = {
   caroStat: true
 }
 
-const userFullQuery = await db.query.users.findFirst({
+const userFullQuery = db.query.users.findFirst({
   with: userFullRelations
 });
 
@@ -28,6 +28,17 @@ export async function getUserById(id: string): Promise<User> {
   }
 
   return user;
+}
+
+export async function findUsers(search?: string, offset: number = 0, limit: number = 10): Promise<User[]> {
+  return await db.query.users.findMany({
+    where: search ? {
+      name: {like: `%${search}%`}
+    } : undefined,
+    offset: offset,
+    limit: limit,
+    with: userFullRelations
+  });
 }
 
 export async function syncUser(userId: string, isAnonymous: boolean, email?: string): Promise<User> {
@@ -75,13 +86,4 @@ export async function syncUser(userId: string, isAnonymous: boolean, email?: str
   return getUserById(userId);
 }
 
-export async function findUsers(search?: string, offset: number = 0, limit: number = 10): Promise<User[]> {
-  return await db.query.users.findMany({
-    where: search ? {
-      name: {like: `%${search}%`}
-    } : undefined,
-    offset: offset,
-    limit: limit,
-    with: userFullRelations
-  });
-}
+

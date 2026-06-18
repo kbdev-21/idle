@@ -1,4 +1,4 @@
-import {type CaroMatch, createCaroMatch, isUserInACaroMatch} from "./caro-match.service.js";
+import {type CaroMatch, createCaroMatch, isUserInACaroMatch} from "./caro-matches-management.service.js";
 
 const caroQueuePlayers = new Set<string>();
 
