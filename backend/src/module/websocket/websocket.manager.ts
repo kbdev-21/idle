@@ -6,9 +6,9 @@ import {
   type CaroMatch,
   getCaroMatchByUserId, makeCaroMove,
   processTimeoutsForCurrentCaroMatches, toClientPayload
-} from "../caro/caro-matches-management.service.js";
+} from "../caro/service/caro-matches-management.service.js";
 import type {AppWebSocket, ClientMessage, ServerMessage} from "./types.js";
-import {joinCaroQueue, leftCaroQueue} from "../caro/caro-matchmaking.service.js";
+import {joinCaroQueue, leftCaroQueue} from "../caro/service/caro-matchmaking.service.js";
 
 const wss = new WebSocketServer({
   noServer: true,

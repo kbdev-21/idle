@@ -4,6 +4,7 @@ import {randomGuestIdentify} from "./user-naming.service.js";
 import {userCaroStats, users} from "../../../database/schema.js";
 import {uuidv7} from "uuidv7";
 import {eq} from "drizzle-orm";
+import type {UpdateUserRequest} from "../dtos.js";
 
 const userFullRelations = {
   caroStat: true
@@ -39,6 +40,14 @@ export async function findUsers(search?: string, offset: number = 0, limit: numb
     limit: limit,
     with: userFullRelations
   });
+}
+
+export async function updateUserById(id: string, updateRequest: UpdateUserRequest): Promise<User> {
+  await db.update(users).set({
+    name: updateRequest.name
+  }).where(eq(users.id, id));
+
+  return await getUserById(id);
 }
 
 export async function syncUser(userId: string, isAnonymous: boolean, email?: string): Promise<User> {

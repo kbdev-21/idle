@@ -1,4 +1,4 @@
-import {db} from "../../database/db.js";
+import {db} from "../../../database/db.js";
 import {HTTPException} from "hono/http-exception";
 
 const caroMatchFullRelations = {

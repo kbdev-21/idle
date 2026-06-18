@@ -1,7 +1,7 @@
-import {db} from "../../database/db.js";
-import {userCaroStats} from "../../database/schema.js";
+import {db} from "../../../database/db.js";
+import {userCaroStats} from "../../../database/schema.js";
 import {eq, inArray, sql} from "drizzle-orm";
-import type {CaroSide} from "./caro.engine.js";
+import type {CaroSide} from "../game-engine/caro.engine.js";
 
 export async function getRatingsByUserIds(userIds: string[]): Promise<Map<string, number>> {
   const stats = await db.select({

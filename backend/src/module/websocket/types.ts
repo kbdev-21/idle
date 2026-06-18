@@ -1,5 +1,5 @@
 import {WebSocket} from "ws";
-import type {CaroMatchPayload} from "../caro/caro-matches-management.service.js";
+import type {CaroMatchPayload} from "../caro/service/caro-matches-management.service.js";
 
 export type AppWebSocket = WebSocket & {
   userId: string;

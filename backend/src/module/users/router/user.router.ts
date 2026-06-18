@@ -1,7 +1,10 @@
 import {Hono} from "hono";
-import {getUserById, findUsers} from "../service/user.service.js";
+import {zValidator} from "@hono/zod-validator";
+import {getUserById, findUsers, updateUserById} from "../service/user.service.js";
 import {authMiddleware} from "../../auth/auth.middleware.js";
+import {UpdateUserRequestSchema} from "../dtos.js";
 import type {AppTypes} from "../../../core/types.js";
+import {allowUserTypesMiddleware} from "../../auth/allow-user-types.middleware.js";
 
 export const userRouter = new Hono<{Variables: AppTypes}>();
 
@@ -38,5 +41,17 @@ userRouter.get("/api/users/:userId",
     const userId = c.req.param("userId");
     const user = await getUserById(userId);
     return c.json(user);
+  }
+);
+
+userRouter.patch("/api/users/me",
+  authMiddleware,
+  allowUserTypesMiddleware(["USER", "ADMIN"]),
+  zValidator("json", UpdateUserRequestSchema),
+  async (c) => {
+    const currentUser = c.get("currentUser")!;
+    const updateRequest = c.req.valid("json");
+    const updatedUser = await updateUserById(currentUser.id, updateRequest);
+    return c.json(updatedUser);
   }
 );

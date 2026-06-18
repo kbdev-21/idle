@@ -1,6 +1,6 @@
 import {boolean, index, integer, jsonb, pgTable, text, timestamp, uuid} from "drizzle-orm/pg-core";
 import {defineRelations, type InferSelectModel} from "drizzle-orm";
-import type {CaroGameState} from "../module/caro/caro.engine.js";
+import type {CaroGameState} from "../module/caro/game-engine/caro.engine.js";
 import {db} from "./db.js";
 
 // users

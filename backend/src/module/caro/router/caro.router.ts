@@ -1,5 +1,5 @@
 import {Hono} from "hono";
-import {getCaroMatchById, findCaroMatches} from "../caro-match.service.js";
+import {getCaroMatchById, findCaroMatches} from "../service/caro-match.service.js";
 import {authMiddleware} from "../../auth/auth.middleware.js";
 import type {AppTypes} from "../../../core/types.js";
 

@@ -1,9 +1,9 @@
-import {randomXtoY} from "../../core/utils.js";
-import {type CaroGameState, type CaroSide, type CaroSquare, newCaroGame, playCaroTurn} from "./caro.engine.js";
+import {randomXtoY} from "../../../core/utils.js";
+import {type CaroGameState, type CaroSide, type CaroSquare, newCaroGame, playCaroTurn} from "../game-engine/caro.engine.js";
 import {applyMatchResult, getRatingsByUserIds} from "./caro-stat.service.js";
 import {uuidv7} from "uuidv7";
-import {db} from "../../database/db.js";
-import {caroMatches} from "../../database/schema.js";
+import {db} from "../../../database/db.js";
+import {caroMatches} from "../../../database/schema.js";
 
 const TURN_TIME_LIMIT_MS = 20_000;
 
