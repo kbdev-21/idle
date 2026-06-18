@@ -25,21 +25,21 @@ const MARK_COLOR: Record<CaroSide, string> = {
 export default function CaroGamePage() {
   const navigate = useNavigate()
   const { data: user } = useMe()
-  const room = useCaroStore((s) => s.room)
+  const match = useCaroStore((s) => s.match)
   const playTurn = useCaroStore((s) => s.playTurn)
-  const leaveRoom = useCaroStore((s) => s.leaveRoom)
+  const leaveMatch = useCaroStore((s) => s.leaveMatch)
 
-  // opponentId = player còn lại trong room (tính trước early-return để giữ thứ tự hook)
-  const opponentId = room
-    ? room.xPlayerId === user?.id
-      ? room.oPlayerId
-      : room.xPlayerId
+  // opponentId = player còn lại trong match (tính trước early-return để giữ thứ tự hook)
+  const opponentId = match
+    ? match.xPlayerId === user?.id
+      ? match.oPlayerId
+      : match.xPlayerId
     : undefined
   const { data: opponent } = useUser(opponentId ?? "")
 
   // "watch board" -> ẩn dialog để xem lại bàn cờ; reset khi ván mới bắt đầu
   const [watching, setWatching] = useState(false)
-  const gameStatus = room?.state.status
+  const gameStatus = match?.state.status
   useEffect(() => {
     if (gameStatus === "playing") setWatching(false)
   }, [gameStatus])
@@ -52,18 +52,18 @@ export default function CaroGamePage() {
     return () => clearInterval(id)
   }, [gameStatus])
 
-  // RequireGame đảm bảo có room khi render, nhưng vẫn guard cho chắc type
-  if (!room) return null
+  // RequireGame đảm bảo có match khi render, nhưng vẫn guard cho chắc type
+  if (!match) return null
 
-  const { board, status, turnOf, winner } = room.state
-  const mySide: CaroSide = room.xPlayerId === user?.id ? "X" : "O"
+  const { board, status, turnOf, winner } = match.state
+  const mySide: CaroSide = match.xPlayerId === user?.id ? "X" : "O"
   const oppSide: CaroSide = mySide === "X" ? "O" : "X"
   const isMyTurn = status === "playing" && turnOf === mySide
 
   // tỉ lệ thời gian còn lại của lượt hiện tại (0..1) cho thanh của người đang active
   const turnProgress =
     status === "playing"
-      ? Math.max(0, TURN_TIME_LIMIT - (now - room.lastMoveAt) / 1000) / TURN_TIME_LIMIT
+      ? Math.max(0, TURN_TIME_LIMIT - (now - match.lastMoveAt) / 1000) / TURN_TIME_LIMIT
       : 1
 
   const handleCellClick = (x: number, y: number) => {
@@ -73,15 +73,15 @@ export default function CaroGamePage() {
   }
 
   const handleLeave = () => {
-    leaveRoom()
+    leaveMatch()
     navigate("/caro")
   }
 
   // kết quả ván + chênh lệch rating của tôi (chỉ dùng khi game over)
   const gameOver = status !== "playing"
   const resultLabel = status === "won" ? (winner === mySide ? "You win 🎉" : "You lose") : "Draw"
-  const myRatingBefore = mySide === "X" ? room.xRating : room.oRating
-  const myRatingAfter = mySide === "X" ? room.xRatingAfter : room.oRatingAfter
+  const myRatingBefore = mySide === "X" ? match.xRating : match.oRating
+  const myRatingAfter = mySide === "X" ? match.xRatingAfter : match.oRatingAfter
   const ratingNow = myRatingAfter ?? myRatingBefore
   const ratingDelta = ratingNow - myRatingBefore
   const deltaText = ratingDelta > 0 ? `+${ratingDelta}` : `${ratingDelta}`

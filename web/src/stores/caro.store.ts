@@ -1,28 +1,28 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { realtime } from "@/core/websocket.ts";
-import type { CaroRoom } from "@/core/caro-types.ts";
+import type { CaroMatch } from "@/core/caro-types.ts";
 
 type CaroState = {
-  room: CaroRoom | null;
+  match: CaroMatch | null;
   playTurn: (x: number, y: number) => void;
-  leaveRoom: () => void;
+  leaveMatch: () => void;
 };
 
-// room được set từ useRealtimeListener (MATCH_FOUND / GAME_STATE / GAME_OVER).
+// match được set từ useRealtimeListener (MATCH_FOUND / GAME_STATE / GAME_OVER).
 // persist localStorage -> F5 hiện board ngay; server gửi GAME_STATE lúc connect để sửa stale.
 export const useCaroStore = create<CaroState>()(
   persist(
     (set) => ({
-      room: null,
+      match: null,
       playTurn: (x, y) => {
         realtime.send({ type: "CARO:PLAY_TURN", data: { x, y } });
       },
-      // Leave mềm: chỉ rời UI client-side, room vẫn còn server-side (resume khi quay lại)
-      leaveRoom: () => {
-        set({ room: null });
+      // Leave mềm: chỉ rời UI client-side, match vẫn còn server-side (resume khi quay lại)
+      leaveMatch: () => {
+        set({ match: null });
       },
     }),
-    { name: "caro-room" }
+    { name: "caro-match" }
   )
 );

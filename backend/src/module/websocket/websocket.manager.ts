@@ -2,10 +2,13 @@ import {WebSocketServer} from "ws";
 import type {IncomingMessage} from "node:http";
 import type {Duplex} from "node:stream";
 import {auth} from "../../core/auth.js";
-import * as caroMatchmaking from "../caro/caro-matchmaking.service.js";
-import * as caroRoom from "../caro/caro-room.service.js";
-import type {CaroRoom} from "../caro/caro-room.service.js";
+import {
+  type CaroMatch,
+  getCaroMatchByUserId, makeCaroMove,
+  processTimeoutsForCurrentCaroMatches
+} from "../caro/caro-match.service.js";
 import type {AppWebSocket, ClientMessage, ServerMessage} from "./types.js";
+import {joinCaroQueue, leftCaroQueue} from "../caro/caro-matchmaking.service.js";
 
 const wss = new WebSocketServer({
   noServer: true,
@@ -49,10 +52,10 @@ wss.on("connection", (ws: AppWebSocket) => {
   connectedUser.set(ws.userId, ws);
   console.log("User connected: " + ws.userId);
 
-  // Resume: user đang trong room (vd vừa F5) -> gửi lại state hiện tại
-  const room = caroRoom.getRoomByUserId(ws.userId);
-  if(room) {
-    sendToUser(ws.userId, {type: "CARO:GAME_STATE", data: room});
+  // Resume: user đang trong match (vd vừa F5) -> gửi lại state hiện tại
+  const match = getCaroMatchByUserId(ws.userId);
+  if(match) {
+    sendToUser(ws.userId, {type: "CARO:GAME_STATE", data: match});
   }
 
   ws.on("message", (raw) => {
@@ -74,7 +77,7 @@ function handleDisconnect(ws: AppWebSocket) {
   if(connectedUser.get(ws.userId) !== ws) return;
 
   connectedUser.delete(ws.userId);
-  caroMatchmaking.leftCaroQueue(ws.userId);
+  leftCaroQueue(ws.userId);
   // Disconnect KHÔNG ảnh hưởng room đang chơi — F5/rớt mạng vẫn giữ game (timer xử lý sau)
   console.log("User disconnected: " + ws.userId);
 }
@@ -129,45 +132,45 @@ function sendToUser(userId: string, message: ServerMessage): boolean {
   return true;
 }
 
-function sendToRoom(room: CaroRoom, message: ServerMessage) {
-  sendToUser(room.xPlayerId, message);
-  sendToUser(room.oPlayerId, message);
+function sendToMatch(match: CaroMatch, message: ServerMessage) {
+  sendToUser(match.xPlayerId, message);
+  sendToUser(match.oPlayerId, message);
 }
 
-function broadcastRoomState(room: CaroRoom) {
-  if(room.state.status === "playing") sendToRoom(room, {type: "CARO:GAME_STATE", data: room});
-  else sendToRoom(room, {type: "CARO:GAME_OVER", data: room});
+function broadcastMatchState(match: CaroMatch) {
+  if(match.state.status === "playing") sendToMatch(match, {type: "CARO:GAME_STATE", data: match});
+  else sendToMatch(match, {type: "CARO:GAME_OVER", data: match});
 }
 
 // Tick: quét timeout mỗi giây -> random move cho người hết giờ rồi broadcast
 setInterval(async () => {
-  const affected = await caroRoom.processTimeouts(Date.now());
-  for(const room of affected) broadcastRoomState(room);
+  const affected = await processTimeoutsForCurrentCaroMatches(Date.now());
+  for(const match of affected) broadcastMatchState(match);
 }, 1000);
 
 // ===== Message handlers =====
 
 async function handleCaroMatchmaking(ws: AppWebSocket) {
-  const room = await caroMatchmaking.joinCaroQueue(ws.userId);
-  if(room === false) {
+  const match = await joinCaroQueue(ws.userId);
+  if(match === false) {
     ws.send(JSON.stringify({type: "ERROR", data: {message: "Already in queue or playing"}}));
     return;
   }
-  if(room === null) return;
+  if(match === null) return;
 
-  sendToRoom(room, {type: "CARO:MATCH_FOUND", data: room});
+  sendToMatch(match, {type: "CARO:MATCH_FOUND", data: match});
 }
 
 function handleCaroCancelMatchmaking(ws: AppWebSocket) {
-  caroMatchmaking.leftCaroQueue(ws.userId);
+  leftCaroQueue(ws.userId);
 }
 
 async function handleCaroPlayTurn(ws: AppWebSocket, x: number, y: number) {
-  const room = await caroRoom.playTurn(ws.userId, x, y);
-  if(!room) {
+  const match = await makeCaroMove(ws.userId, x, y);
+  if(!match) {
     ws.send(JSON.stringify({type: "ERROR", data: {message: "Invalid move"}}));
     return;
   }
 
-  broadcastRoomState(room);
+  broadcastMatchState(match);
 }

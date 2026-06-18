@@ -1,11 +1,11 @@
-import {type CaroRoom, createRoom, isUserPlaying} from "./caro-room.service.js";
+import {type CaroMatch, createCaroMatch, isUserInACaroMatch} from "./caro-match.service.js";
 
 const caroQueuePlayers = new Set<string>();
 
-// false = không vào queue được, null = đang chờ, CaroRoom = đã ghép cặp + tạo phòng
-export async function joinCaroQueue(userId: string): Promise<CaroRoom | null | false> {
+// false = không vào queue được, null = đang chờ, CaroMatch = đã ghép cặp + tạo phòng
+export async function joinCaroQueue(userId: string): Promise<CaroMatch | null | false> {
   if(caroQueuePlayers.has(userId)) return false;
-  if(isUserPlaying(userId)) return false;
+  if(isUserInACaroMatch(userId)) return false;
 
   caroQueuePlayers.add(userId);
   if(caroQueuePlayers.size < 2) return null;
@@ -14,7 +14,7 @@ export async function joinCaroQueue(userId: string): Promise<CaroRoom | null | f
   const [playerA, playerB] = caroQueuePlayers;
   caroQueuePlayers.delete(playerA);
   caroQueuePlayers.delete(playerB);
-  return await createRoom(playerA, playerB);
+  return await createCaroMatch(playerA, playerB);
 }
 
 export function leftCaroQueue(userId: string) {

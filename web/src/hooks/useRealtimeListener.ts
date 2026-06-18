@@ -16,16 +16,16 @@ export function useRealtimeListener() {
       switch (msg.type) {
         case "CARO:MATCH_FOUND":
           useMatchmakingStore.setState({ findingMatch: false });
-          useCaroStore.setState({ room: msg.data });
+          useCaroStore.setState({ match: msg.data });
           navigate("/caro/play");
           break;
         case "CARO:GAME_STATE":
           // nước đi mới hoặc resume lúc connect
-          useCaroStore.setState({ room: msg.data });
+          useCaroStore.setState({ match: msg.data });
           break;
         case "CARO:GAME_OVER":
           // giữ board cuối để hiện kết quả
-          useCaroStore.setState({ room: msg.data });
+          useCaroStore.setState({ match: msg.data });
           break;
         case "ERROR":
           useMatchmakingStore.setState({ findingMatch: false });

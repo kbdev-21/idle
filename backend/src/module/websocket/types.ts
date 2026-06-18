@@ -1,5 +1,5 @@
 import {WebSocket} from "ws";
-import type {CaroRoom} from "../caro/caro-room.service.js";
+import type {CaroMatch} from "../caro/caro-match.service.js";
 
 export type AppWebSocket = WebSocket & {
   userId: string;
@@ -13,7 +13,7 @@ export type ClientMessage =
 export type ClientMessageType = ClientMessage["type"];
 
 export type ServerMessage =
-  | {type: "CARO:MATCH_FOUND", data: CaroRoom}
-  | {type: "CARO:GAME_STATE", data: CaroRoom}
-  | {type: "CARO:GAME_OVER", data: CaroRoom}
+  | {type: "CARO:MATCH_FOUND", data: CaroMatch}
+  | {type: "CARO:GAME_STATE", data: CaroMatch}
+  | {type: "CARO:GAME_OVER", data: CaroMatch}
   | {type: "ERROR", data: {message: string}};

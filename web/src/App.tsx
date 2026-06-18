@@ -14,17 +14,17 @@ import CaroGamePage from "@/pages/caro-game/CaroGamePage.tsx";
 // Không trong game mà vào /caro/game -> đẩy về lobby.
 // (persist rehydrate đồng bộ nên F5 giữa game không bị đẩy nhầm)
 function RequireGame({ children }: { children: ReactNode }) {
-  const room = useCaroStore((s) => s.room);
-  if (!room) return <Navigate to="/caro" replace />;
+  const match = useCaroStore((s) => s.match);
+  if (!match) return <Navigate to="/caro" replace />;
   return children;
 }
 
-// Đang chơi dở (room persist, status playing) -> mọi lần mount app đều vào trang game.
+// Đang chơi dở (match persist, status playing) -> mọi lần mount app đều vào trang game.
 // Game đã kết thúc thì không ép quay lại (xem kết quả xong rời bình thường).
 function useResumeCaroGame() {
   const navigate = useNavigate();
   useEffect(() => {
-    if (useCaroStore.getState().room?.state.status === "playing") {
+    if (useCaroStore.getState().match?.state.status === "playing") {
       navigate("/caro/play", { replace: true });
     }
   }, [navigate]);

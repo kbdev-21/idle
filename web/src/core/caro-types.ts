@@ -1,4 +1,4 @@
-// Mirror backend: module/caro/caro.engine.ts + caro-room.service.ts
+// Mirror backend: module/caro/caro.engine.ts + caro-match.service.ts
 export type CaroSide = "X" | "O";
 
 export type CaroSquare = CaroSide | null;
@@ -13,7 +13,7 @@ export type CaroGameState = {
   winner: CaroSide | null;
 };
 
-export type CaroRoom = {
+export type CaroMatch = {
   id: string;
   xPlayerId: string;
   xRating: number;
