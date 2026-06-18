@@ -1,11 +1,8 @@
-import 'reflect-metadata';
 import 'dotenv/config';
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import {dataSource} from "./core/data-source.js";
 import {userRouter} from "./module/users/router/user.router.js";
-import {friendRouter} from "./module/users/router/friend.router.js";
 import type {AppTypes} from "./core/types.js";
 import {caroRouter} from "./module/caro/caro.router.js";
 import {handleWsUpgrade} from "./module/websocket/websocket.manager.js";
@@ -19,10 +16,7 @@ app.use("*", cors({
 }));
 
 app.route("/", userRouter);
-app.route("/", friendRouter);
 app.route("/", caroRouter);
-
-await dataSource.initialize();
 
 const server = serve({
   fetch: app.fetch,

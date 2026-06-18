@@ -1,59 +1,88 @@
+import {db} from "../../../database/db.js";
 import {HTTPException} from "hono/http-exception";
-import {ILike} from "typeorm";
-import {User, userRelations} from "../entity/user.entity.js";
-import {dataSource} from "../../../core/data-source.js";
 import {randomGuestIdentify} from "./user-naming.service.js";
+import {userCaroStats, users} from "../../../database/schema.js";
+import {uuidv7} from "uuidv7";
+import {eq} from "drizzle-orm";
 
-const userRepo = dataSource.getRepository(User);
+const userFullRelations = {
+  caroStat: true
+}
+
+const userFullQuery = await db.query.users.findFirst({
+  with: userFullRelations
+});
+
+export type User = Awaited<NonNullable<typeof userFullQuery>>;
 
 export async function getUserById(id: string): Promise<User> {
-  const user = await userRepo.findOne({
-    where: { id },
-    relations: userRelations,
+  const user = await db.query.users.findFirst({
+    where: {
+      id: id
+    },
+    with: userFullRelations
   });
-  if (!user) {
-    throw new HTTPException(404, { message: "User not found" });
+
+  if(!user) {
+    throw new HTTPException(404, {message: "User not found"});
   }
+
   return user;
 }
 
 export async function syncUser(userId: string, isAnonymous: boolean, email?: string): Promise<User> {
-  const existingUser = await userRepo.findOne({
-    where: { id: userId },
-    relations: userRelations,
+  const existingUser = await db.query.users.findFirst({
+    where: {
+      id: userId,
+    },
+    with: userFullRelations
   });
 
   const newType = isAnonymous ? "GUEST" : "USER";
 
-  // update type
-  if (existingUser) {
+  if(existingUser) {
     if(existingUser.type !== "GUEST") return existingUser;
     if(isAnonymous) return existingUser;
 
-    await userRepo.update(userId, {
+    await db.update(users).set({
       type: newType,
-      email: email,
-    });
+      email: email
+    }).where(eq(users.id, existingUser.id));
 
-    return getUserById(userId);
+    return getUserById(existingUser.id);
   }
 
   const {name, avtUrl} = randomGuestIdentify();
-  await userRepo.insert({
-    id: userId,
-    name: name,
-    avtUrl: avtUrl,
-    type: newType
+  const baseRating = 1000;
+
+  await db.transaction(async tx => {
+    await tx.insert(users).values({
+      id: userId,
+      name: name,
+      avtUrl: avtUrl,
+      type: newType
+    });
+    await tx.insert(userCaroStats).values({
+      id: uuidv7(),
+      userId: userId,
+      rating: baseRating,
+      matches: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0
+    })
   });
 
   return getUserById(userId);
 }
 
 export async function findUsers(search?: string, offset: number = 0, limit: number = 10): Promise<User[]> {
-  return await userRepo.find({
-    where: search ? { name: ILike(`%${search}%`) } : {},
-    skip: offset,
-    take: limit,
-    relations: userRelations,
+  return await db.query.users.findMany({
+    where: search ? {
+      name: {like: `%${search}%`}
+    } : undefined,
+    offset: offset,
+    limit: limit,
+    with: userFullRelations
   });
 }
