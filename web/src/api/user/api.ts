@@ -17,13 +17,27 @@ export async function getUserById(userId: string): Promise<User> {
 
 export type UserType = "GUEST" | "USER" | "ADMIN";
 
+export type CaroStat = {
+  id: string;
+  userId: string;
+  rating: number;
+  matches: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type User = {
   id: string;
   type: UserType;
   name: string;
   avtUrl: string;
+  email: string | null;
   createdAt: string;
   updatedAt: string;
+  caroStat: CaroStat | null;
 };
 
 export type FindUsersParams = {

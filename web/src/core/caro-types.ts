@@ -15,6 +15,11 @@ export type CaroGameState = {
 
 export type CaroRoom = {
   id: string;
-  players: { X: string; O: string };
+  xPlayerId: string;
+  xRating: number;
+  xRatingAfter: number | null;
+  oPlayerId: string;
+  oRating: number;
+  oRatingAfter: number | null;
   state: CaroGameState;
 };

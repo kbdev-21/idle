@@ -1,4 +1,5 @@
 import { Hash, WholeWord } from "lucide-react"
+import { Navigate } from "react-router-dom"
 
 import { useMe } from "@/api/user/query-hooks.ts"
 import { Spinner } from "@/components/ui/spinner.tsx"
@@ -26,6 +27,9 @@ const games = [
 
 export default function HomePage() {
   const { data: user, isLoading } = useMe()
+
+  // TODO: tạm redirect thẳng sang /caro vì home chưa hoàn thiện — bỏ khi home sẵn sàng
+  return <Navigate to="/caro" replace />
 
   if (isLoading) {
     return (

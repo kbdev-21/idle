@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Bot, ChevronRight, Hash, Swords, UserPlus, type LucideIcon } from "lucide-react"
+import { Bot, ChevronRight, Hash, Pencil, Swords, UserPlus, type LucideIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { useMe } from "@/api/user/query-hooks.ts"
@@ -50,7 +50,10 @@ export default function CaroLobbyPage() {
               )}
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="font-bold">{user?.name ?? "..."}</span>
+              <span className="flex items-center gap-1.5 font-bold">
+                {user?.name ?? "..."}
+                <Pencil size={13} className="text-muted-foreground" />
+              </span>
               <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 You
               </span>
@@ -60,7 +63,9 @@ export default function CaroLobbyPage() {
           <div className="flex items-center gap-4">
             <span className="h-9 w-px bg-black/10" />
             <div className="flex flex-col items-end leading-none">
-              <span className="text-2xl font-extrabold tracking-tight">1,431</span>
+              <span className="text-2xl font-extrabold tracking-tight">
+                {user?.caroStat?.rating.toLocaleString() ?? "..."}
+              </span>
               <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 Rating
               </span>
@@ -95,12 +100,14 @@ export default function CaroLobbyPage() {
             color="#16A34A"
             title="Practice with bot"
             subtitle="Casual · no rating at stake"
+            onClick={() => toast.info("Available soon")}
           />
           <ActionRow
             icon={UserPlus}
             color="#3B5BDB"
             title="Challenge a friend"
             subtitle="Create a private room and share the code"
+            onClick={() => toast.info("Available soon")}
           />
         </div>
     </main>
@@ -146,7 +153,7 @@ function ActionRow({ icon: Icon, color, title, subtitle, badge, onClick, disable
       <div className="ml-auto pl-2">
         {badge ? (
           <span
-            className="rounded-full px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider"
+            className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
             style={{ backgroundColor: "#FACC15", color: "#422006" }}
           >
             {badge}

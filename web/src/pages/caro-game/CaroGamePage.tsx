@@ -1,9 +1,18 @@
+import { useEffect, useState } from "react"
 import { Circle, X } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import { useMe, useUser } from "@/api/user/query-hooks.ts"
 import { useCaroStore } from "@/stores/caro.store.ts"
 import type { CaroSide } from "@/core/caro-types.ts"
+import { cn } from "@/lib/utils.ts"
+import { Button } from "@/components/ui/button.tsx"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog.tsx"
 
 const SIZE = 15
 
@@ -21,17 +30,24 @@ export default function CaroGamePage() {
 
   // opponentId = player còn lại trong room (tính trước early-return để giữ thứ tự hook)
   const opponentId = room
-    ? room.players.X === user?.id
-      ? room.players.O
-      : room.players.X
+    ? room.xPlayerId === user?.id
+      ? room.oPlayerId
+      : room.xPlayerId
     : undefined
   const { data: opponent } = useUser(opponentId ?? "")
+
+  // "watch board" -> ẩn dialog để xem lại bàn cờ; reset khi ván mới bắt đầu
+  const [watching, setWatching] = useState(false)
+  const gameStatus = room?.state.status
+  useEffect(() => {
+    if (gameStatus === "playing") setWatching(false)
+  }, [gameStatus])
 
   // RequireGame đảm bảo có room khi render, nhưng vẫn guard cho chắc type
   if (!room) return null
 
   const { board, status, turnOf, winner } = room.state
-  const mySide: CaroSide = room.players.X === user?.id ? "X" : "O"
+  const mySide: CaroSide = room.xPlayerId === user?.id ? "X" : "O"
   const oppSide: CaroSide = mySide === "X" ? "O" : "X"
   const isMyTurn = status === "playing" && turnOf === mySide
 
@@ -46,6 +62,17 @@ export default function CaroGamePage() {
     navigate("/caro")
   }
 
+  // kết quả ván + chênh lệch rating của tôi (chỉ dùng khi game over)
+  const gameOver = status !== "playing"
+  const resultLabel = status === "won" ? (winner === mySide ? "You win 🎉" : "You lose") : "Draw"
+  const myRatingBefore = mySide === "X" ? room.xRating : room.oRating
+  const myRatingAfter = mySide === "X" ? room.xRatingAfter : room.oRatingAfter
+  const ratingNow = myRatingAfter ?? myRatingBefore
+  const ratingDelta = ratingNow - myRatingBefore
+  const deltaText = ratingDelta > 0 ? `+${ratingDelta}` : `${ratingDelta}`
+  const deltaColor =
+    ratingDelta > 0 ? "text-green-600" : ratingDelta < 0 ? "text-red-600" : "text-muted-foreground"
+
   return (
     <main className="flex flex-1 flex-col items-center gap-4 px-4 py-6">
       {/* status */}
@@ -56,7 +83,7 @@ export default function CaroGamePage() {
         <PlayerBar
           mark={oppSide}
           name={opponent?.name ?? "Opponent"}
-          rating={1431}
+          rating={opponent?.caroStat?.rating ?? 0}
           avatarUrl={opponent?.avtUrl}
           avatarFallback="🦊"
           active={status === "playing" && turnOf === oppSide}
@@ -92,7 +119,7 @@ export default function CaroGamePage() {
         <PlayerBar
           mark={mySide}
           name={user?.name ?? "You"}
-          rating={1431}
+          rating={user?.caroStat?.rating ?? 0}
           avatarUrl={user?.avtUrl}
           avatarFallback="🐝"
           active={isMyTurn}
@@ -105,6 +132,38 @@ export default function CaroGamePage() {
       >
         Leave
       </button>
+
+      <Dialog open={gameOver && !watching} onOpenChange={(open) => !open && setWatching(true)}>
+        <DialogContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          className="gap-4 p-5 sm:max-w-[260px]"
+        >
+          <DialogHeader className="items-center text-center">
+            <DialogTitle className="text-lg font-bold">{resultLabel}</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex items-baseline justify-center gap-2">
+            <span className="text-2xl font-extrabold tracking-tight">
+              {ratingNow.toLocaleString()}
+            </span>
+            <span className={cn("text-sm font-bold", deltaColor)}>{deltaText}</span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Button className="w-full rounded-lg font-bold" onClick={handleLeave}>
+              Return to lobby
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full rounded-lg font-bold"
+              onClick={() => setWatching(true)}
+            >
+              Watch board
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
