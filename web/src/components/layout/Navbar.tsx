@@ -79,11 +79,21 @@ function SignInDialog({
   onOpenChange: (open: boolean) => void
 }) {
   async function handleGoogleLink() {
-    await auth.linkIdentity({ provider: "google" });
+    await auth.linkIdentity({
+      provider: "google",
+      options: {
+        redirectTo: import.meta.env.VITE_WEB_URL
+      }
+    });
   }
 
   async function handleGoogleSignIn() {
-    await auth.signInWithOAuth({ provider: "google" });
+    await auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: import.meta.env.VITE_WEB_URL
+      }
+    });
   }
 
   return (
