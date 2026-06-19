@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog.tsx"
+import ProfileDialog from "@/components/shared/ProfileDialog.tsx"
 
 const SIZE = 15
 const TURN_TIME_LIMIT = 20 // giây, mirror backend TURN_TIME_LIMIT_MS
@@ -36,6 +37,14 @@ export default function CaroGamePage() {
       : match.xPlayerId
     : undefined
   const { data: opponent } = useUser(opponentId ?? "")
+
+  // profile dialog: tách open khỏi userId để khi đóng data không bị mất giữa animation
+  const [profileUserId, setProfileUserId] = useState<string | null>(null)
+  const [profileOpen, setProfileOpen] = useState(false)
+  const openProfile = (id: string) => {
+    setProfileUserId(id)
+    setProfileOpen(true)
+  }
 
   // "watch board" -> ẩn dialog để xem lại bàn cờ; reset khi ván mới bắt đầu
   const [watching, setWatching] = useState(false)
@@ -81,7 +90,7 @@ export default function CaroGamePage() {
   const gameOver = status !== "playing"
   const resultLabel = status === "won" ? (winner === mySide ? "You win 🎉" : "You lose") : "Draw"
   const myRatingBefore = mySide === "X" ? match.xRating : match.oRating
-  const myRatingAfter = mySide === "X" ? match.xRatingAfter : match.oRatingAfter
+  const myRatingAfter = mySide === "X" ? match.xNewRating : match.oNewRating
   const ratingNow = myRatingAfter ?? myRatingBefore
   const ratingDelta = ratingNow - myRatingBefore
   const deltaText = ratingDelta > 0 ? `+${ratingDelta}` : `${ratingDelta}`
@@ -103,6 +112,7 @@ export default function CaroGamePage() {
           avatarFallback="🦊"
           active={status === "playing" && turnOf === oppSide}
           progress={turnProgress}
+          onProfileClick={opponentId ? () => openProfile(opponentId) : undefined}
         />
 
         {/* board */}
@@ -140,6 +150,7 @@ export default function CaroGamePage() {
           avatarFallback="🐝"
           active={isMyTurn}
           progress={turnProgress}
+          onProfileClick={user ? () => openProfile(user.id) : undefined}
         />
       </div>
 
@@ -182,6 +193,12 @@ export default function CaroGamePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ProfileDialog
+        userId={profileUserId ?? ""}
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+      />
     </main>
   )
 }
@@ -216,30 +233,39 @@ type PlayerBarProps = {
   avatarFallback: string
   active?: boolean
   progress?: number
+  onProfileClick?: () => void
 }
 
-function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active, progress }: PlayerBarProps) {
+function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active, progress, onProfileClick }: PlayerBarProps) {
   // chỉ người đang active mới đếm ngược; người còn lại giữ thanh đầy (xám)
   const width = active && progress !== undefined ? `${progress * 100}%` : "100%"
   return (
     <div className="flex flex-col gap-3">
       {/* hàng info: avatar + (name/rating) bên trái, mark badge đẩy về phải */}
       <div className="flex items-center gap-2.5">
-        <div
-          className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xl"
-          style={{ boxShadow: `0 0 0 2px ${MARK_COLOR[mark]}` }}
+        {/* avatar + name clickable -> mở profile */}
+        <button
+          type="button"
+          onClick={onProfileClick}
+          disabled={!onProfileClick}
+          className="flex items-center gap-2.5 text-left disabled:cursor-default"
         >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
-          ) : (
-            avatarFallback
-          )}
-        </div>
+          <div
+            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xl"
+            style={{ boxShadow: `0 0 0 2px ${MARK_COLOR[mark]}` }}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+            ) : (
+              avatarFallback
+            )}
+          </div>
 
-        <div className="flex flex-col leading-tight">
-          <span className="font-bold">{name}</span>
-          <span className="text-sm font-medium text-muted-foreground">{rating.toLocaleString()}</span>
-        </div>
+          <div className="flex flex-col leading-tight">
+            <span className="font-bold">{name}</span>
+            <span className="text-sm font-medium text-muted-foreground">{rating.toLocaleString()}</span>
+          </div>
+        </button>
 
         {/* mark badge đẩy sát mép phải để thẳng hàng với đuôi thanh time */}
         <div

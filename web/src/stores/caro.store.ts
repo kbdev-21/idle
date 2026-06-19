@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { realtime } from "@/core/websocket.ts";
-import type { CaroMatch } from "@/core/caro-types.ts";
+import type { CaroMatchWsPayload } from "@/core/caro-types.ts";
 
 type CaroState = {
-  match: CaroMatch | null;
+  match: CaroMatchWsPayload | null;
   playTurn: (x: number, y: number) => void;
   leaveMatch: () => void;
 };

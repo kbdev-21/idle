@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Menu, Moon, Sun, Volume2, VolumeX } from "lucide-react"
 
-import GoogleIcon from "@/components/common/GoogleIcon.tsx"
+import GoogleIcon from "@/components/shared/GoogleIcon.tsx"
 import { auth } from "@/core/auth.ts"
 import { useAuthStore } from "@/stores/auth.store.ts"
 import { Button } from "@/components/ui/button.tsx"

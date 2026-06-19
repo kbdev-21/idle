@@ -1,5 +1,5 @@
 // ===== Message types (mirror backend: module/websocket/types.ts) =====
-import type { CaroMatch } from "@/core/caro-types.ts";
+import type { CaroMatchWsPayload } from "@/core/caro-types.ts";
 
 export type ClientMessage =
   | { type: "CARO:MATCHMAKING" }
@@ -7,9 +7,9 @@ export type ClientMessage =
   | { type: "CARO:PLAY_TURN"; data: { x: number; y: number } };
 
 export type ServerMessage =
-  | { type: "CARO:MATCH_FOUND"; data: CaroMatch }
-  | { type: "CARO:GAME_STATE"; data: CaroMatch }
-  | { type: "CARO:GAME_OVER"; data: CaroMatch }
+  | { type: "CARO:MATCH_FOUND"; data: CaroMatchWsPayload }
+  | { type: "CARO:GAME_STATE"; data: CaroMatchWsPayload }
+  | { type: "CARO:GAME_OVER"; data: CaroMatchWsPayload }
   | { type: "ERROR"; data: { message: string } };
 
 type Listener = (message: ServerMessage) => void;

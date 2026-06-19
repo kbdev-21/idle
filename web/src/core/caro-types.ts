@@ -13,14 +13,14 @@ export type CaroGameState = {
   winner: CaroSide | null;
 };
 
-export type CaroMatch = {
+export type CaroMatchWsPayload = {
   id: string;
   xPlayerId: string;
   xRating: number;
-  xRatingAfter: number | null;
+  xNewRating: number | null;
   oPlayerId: string;
   oRating: number;
-  oRatingAfter: number | null;
+  oNewRating: number | null;
   state: CaroGameState;
   lastMoveAt: number;
 };
