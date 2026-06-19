@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog.tsx"
 import ProfileDialog from "@/components/shared/ProfileDialog.tsx"
+import { AVATARS } from "@/core/constants.ts"
 
 const SIZE = 15
 const TURN_TIME_LIMIT = 20 // giây, mirror backend TURN_TIME_LIMIT_MS
@@ -108,7 +109,7 @@ export default function CaroGamePage() {
           mark={oppSide}
           name={opponent?.name ?? "Opponent"}
           rating={opponent?.caroStat?.rating ?? 0}
-          avatarUrl={opponent?.avtUrl}
+          avtCode={opponent?.avtCode}
           avatarFallback="🦊"
           active={status === "playing" && turnOf === oppSide}
           progress={turnProgress}
@@ -146,7 +147,7 @@ export default function CaroGamePage() {
           mark={mySide}
           name={user?.name ?? "You"}
           rating={user?.caroStat?.rating ?? 0}
-          avatarUrl={user?.avtUrl}
+          avtCode={user?.avtCode}
           avatarFallback="🐝"
           active={isMyTurn}
           progress={turnProgress}
@@ -229,14 +230,15 @@ type PlayerBarProps = {
   mark: CaroSide
   name: string
   rating: number
-  avatarUrl?: string
+  avtCode?: string
   avatarFallback: string
   active?: boolean
   progress?: number
   onProfileClick?: () => void
 }
 
-function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active, progress, onProfileClick }: PlayerBarProps) {
+function PlayerBar({ mark, name, rating, avtCode, avatarFallback, active, progress, onProfileClick }: PlayerBarProps) {
+  const avatarSrc = avtCode ? AVATARS[avtCode] : undefined
   // chỉ người đang active mới đếm ngược; người còn lại giữ thanh đầy (xám)
   const width = active && progress !== undefined ? `${progress * 100}%` : "100%"
   return (
@@ -254,8 +256,8 @@ function PlayerBar({ mark, name, rating, avatarUrl, avatarFallback, active, prog
             className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xl"
             style={{ boxShadow: `0 0 0 2px ${MARK_COLOR[mark]}` }}
           >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+            {avatarSrc ? (
+              <img src={avatarSrc} alt={name} className="h-full w-full object-cover" />
             ) : (
               avatarFallback
             )}

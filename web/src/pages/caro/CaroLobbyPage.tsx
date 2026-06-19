@@ -5,6 +5,7 @@ import { useMe } from "@/api/user/query-hooks.ts"
 import { useMatchmakingStore } from "@/stores/matchmaking.store.ts"
 import { Spinner } from "@/components/ui/spinner.tsx"
 import ProfileDialog from "@/components/shared/ProfileDialog.tsx"
+import { AVATARS } from "@/core/constants.ts"
 
 export default function CaroLobbyPage() {
   const { data: user, isLoading } = useMe()
@@ -58,9 +59,9 @@ export default function CaroLobbyPage() {
       >
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-2xl">
-            {user?.avtUrl ? (
+            {user && AVATARS[user.avtCode] ? (
               <img
-                src={user.avtUrl}
+                src={AVATARS[user.avtCode]}
                 alt={user.name}
                 className="h-full w-full object-cover"
               />

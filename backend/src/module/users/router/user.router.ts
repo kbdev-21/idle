@@ -46,7 +46,6 @@ userRouter.get("/api/users/:userId",
 
 userRouter.patch("/api/users/me",
   authMiddleware,
-  allowUserTypesMiddleware(["USER", "ADMIN"]),
   zValidator("json", UpdateUserRequestSchema),
   async (c) => {
     const currentUser = c.get("currentUser")!;

@@ -1,15 +1,19 @@
+import { useEffect, useState } from "react"
 import { Pencil } from "lucide-react"
 
-import { useMe, useUser } from "@/api/user/query-hooks.ts"
+import { useMe, useUpdateMe, useUser } from "@/api/user/query-hooks.ts"
 import { useCaroMatches } from "@/api/caro/query-hooks.ts"
 import type { CaroMatchSummary } from "@/api/caro/api.ts"
 import type { User } from "@/api/user/api.ts"
+import { AVATARS } from "@/core/constants.ts"
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog.tsx"
+import { Button } from "@/components/ui/button.tsx"
 import { Spinner } from "@/components/ui/spinner.tsx"
 import { cn } from "@/lib/utils.ts"
 
@@ -26,7 +30,11 @@ export default function ProfileDialog({ userId, open, onOpenChange }: ProfileDia
   const isMe = me?.id === userId;
   const isLoading = userLoading || matchesLoading;
 
+  const [editOpen, setEditOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
+
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="sm:max-w-[440px]">
         {/* tiêu đề ẩn cho screen reader (a11y), nội dung hiển thị tự custom bên dưới */}
@@ -40,14 +48,28 @@ export default function ProfileDialog({ userId, open, onOpenChange }: ProfileDia
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 pt-2">
-            {/* avatar top center */}
-            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-3xl">
-              {user.avtUrl ? (
-                <img src={user.avtUrl} alt={user.name} className="h-full w-full object-cover" />
+            {/* avatar top center; click để đổi (chỉ khi là chính mình) */}
+            <button
+              type="button"
+              onClick={() => setAvatarOpen(true)}
+              disabled={!isMe}
+              className={cn(
+                "relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-3xl disabled:cursor-default",
+                isMe && "group"
+              )}
+            >
+              {AVATARS[user.avtCode] ? (
+                <img src={AVATARS[user.avtCode]} alt={user.name} className="h-full w-full object-cover" />
               ) : (
                 "🐝"
               )}
-            </div>
+              {/* hover (chỉ khi là chính mình): tối avatar + icon bút giữa */}
+              {isMe && (
+                <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-100 group-hover:opacity-100">
+                  <Pencil size={20} className="text-white" />
+                </span>
+              )}
+            </button>
 
             {/* name center; nút edit absolute ở mép phải name -> không làm lệch center */}
             <div className="relative">
@@ -55,6 +77,7 @@ export default function ProfileDialog({ userId, open, onOpenChange }: ProfileDia
               {isMe && (
                 <button
                   type="button"
+                  onClick={() => setEditOpen(true)}
                   className="absolute left-full top-1/2 ml-1.5 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="Edit profile"
                 >
@@ -78,6 +101,14 @@ export default function ProfileDialog({ userId, open, onOpenChange }: ProfileDia
         )}
       </DialogContent>
     </Dialog>
+
+    {isMe && user && (
+      <UpdateNameDialog open={editOpen} onOpenChange={setEditOpen} currentName={user.name} />
+    )}
+    {isMe && user && (
+      <UpdateAvatarDialog open={avatarOpen} onOpenChange={setAvatarOpen} currentAvtCode={user.avtCode} />
+    )}
+    </>
   )
 }
 
@@ -157,8 +188,8 @@ function PlayerLine({ player, rating }: { player: User; rating: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xs">
-        {player.avtUrl ? (
-          <img src={player.avtUrl} alt={player.name} className="h-full w-full object-cover" />
+        {AVATARS[player.avtCode] ? (
+          <img src={AVATARS[player.avtCode]} alt={player.name} className="h-full w-full object-cover" />
         ) : (
           "🐝"
         )}
@@ -166,5 +197,118 @@ function PlayerLine({ player, rating }: { player: User; rating: number }) {
       <span className="text-sm font-semibold">{player.name}</span>
       <span className="text-xs text-muted-foreground">({rating})</span>
     </div>
+  )
+}
+
+function UpdateNameDialog({
+  open,
+  onOpenChange,
+  currentName,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentName: string;
+}) {
+  const updateMe = useUpdateMe();
+  const [nameInput, setNameInput] = useState(currentName);
+
+  // mỗi lần mở lại -> reset input về tên hiện tại
+  useEffect(() => {
+    if (open) setNameInput(currentName);
+  }, [open, currentName]);
+
+  const handleConfirm = () => {
+    updateMe.mutate(
+      { name: nameInput },
+      { onSuccess: () => onOpenChange(false) }
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent aria-describedby={undefined} className="sm:max-w-[360px]">
+        <DialogHeader>
+          <DialogTitle>Update your name</DialogTitle>
+        </DialogHeader>
+
+        <input
+          value={nameInput}
+          onChange={(e) => setNameInput(e.target.value)}
+          maxLength={20}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-gray-400"
+        />
+
+        <DialogFooter>
+          <Button
+            className="font-bold"
+            onClick={handleConfirm}
+            disabled={updateMe.isPending || nameInput.trim().length === 0}
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function UpdateAvatarDialog({
+  open,
+  onOpenChange,
+  currentAvtCode,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentAvtCode: string;
+}) {
+  const updateMe = useUpdateMe();
+  const [selected, setSelected] = useState(currentAvtCode);
+
+  // mỗi lần mở lại -> reset về avatar hiện tại
+  useEffect(() => {
+    if (open) setSelected(currentAvtCode);
+  }, [open, currentAvtCode]);
+
+  const handleSave = () => {
+    updateMe.mutate(
+      { avtCode: selected },
+      { onSuccess: () => onOpenChange(false) }
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent aria-describedby={undefined} className="sm:max-w-[360px]">
+        <DialogHeader>
+          <DialogTitle>Choose your avatar</DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-3 gap-3">
+          {Object.entries(AVATARS).map(([code, src]) => (
+            <button
+              key={code}
+              type="button"
+              onClick={() => setSelected(code)}
+              className={cn(
+                "flex aspect-square items-center justify-center overflow-hidden rounded-full bg-gray-100 ring-2 ring-offset-2 transition-colors",
+                selected === code ? "ring-foreground/80" : "ring-transparent hover:ring-gray-300"
+              )}
+            >
+              <img src={src} alt={code} className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+
+        <DialogFooter>
+          <Button
+            className="font-bold"
+            onClick={handleSave}
+            disabled={updateMe.isPending}
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

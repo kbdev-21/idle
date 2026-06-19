@@ -38,7 +38,7 @@ export type User = {
   id: string;
   type: UserType;
   name: string;
-  avtUrl: string;
+  avtCode: string;
   email: string | null;
   createdAt: string;
   updatedAt: string;
@@ -52,5 +52,6 @@ export type FindUsersParams = {
 };
 
 export type UpdateUserRequest = {
-  name: string;
+  name?: string;
+  avtCode?: string;
 };

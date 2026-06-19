@@ -1,6 +1,6 @@
 import {db} from "../../../database/db.js";
 import {HTTPException} from "hono/http-exception";
-import {randomGuestIdentify} from "./user-naming.service.js";
+import {randomGuestIdentify} from "./user-identify.service.js";
 import {userCaroStats, users} from "../../../database/schema.js";
 import {uuidv7} from "uuidv7";
 import {eq} from "drizzle-orm";
@@ -43,8 +43,13 @@ export async function findUsers(search?: string, offset: number = 0, limit: numb
 }
 
 export async function updateUserById(id: string, updateRequest: UpdateUserRequest): Promise<User> {
+  if(updateRequest.name === undefined && updateRequest.avtCode === undefined) {
+    return await getUserById(id);
+  }
+
   await db.update(users).set({
-    name: updateRequest.name
+    name: updateRequest.name,
+    avtCode: updateRequest.avtCode
   }).where(eq(users.id, id));
 
   return await getUserById(id);
@@ -71,14 +76,14 @@ export async function syncUser(userId: string, isAnonymous: boolean, email?: str
     return getUserById(existingUser.id);
   }
 
-  const {name, avtUrl} = randomGuestIdentify();
+  const {name, avtCode} = randomGuestIdentify();
   const baseRating = 1000;
 
   await db.transaction(async tx => {
     await tx.insert(users).values({
       id: userId,
       name: name,
-      avtUrl: avtUrl,
+      avtCode: avtCode,
       type: newType
     });
     await tx.insert(userCaroStats).values({

@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { findUsers, getMe, getUserById, type FindUsersParams } from "@/api/user/api.ts";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { findUsers, getMe, getUserById, updateMe, type FindUsersParams, type UpdateUserRequest } from "@/api/user/api.ts";
 
 export const userKeys = {
   all: ["users"] as const,
@@ -27,5 +27,15 @@ export function useUser(userId: string) {
     queryKey: userKeys.detail(userId),
     queryFn: () => getUserById(userId),
     enabled: !!userId,
+  });
+}
+
+export function useUpdateMe() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UpdateUserRequest) => updateMe(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.all });
+    },
   });
 }

@@ -8,13 +8,14 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey(),
   type: text("type").$type<UserType>().notNull(),
   name: text("name").notNull(),
-  avtUrl: text("avt_url").notNull(),
+  avtCode: text("avt_code").$type<UserAvtCode>().notNull(),
   email: text("email").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().$onUpdateFn(() => new Date()).notNull(),
 });
 
 export type UserType = "GUEST" | "USER" | "ADMIN";
+export type UserAvtCode = "BUNNY" | "KITTEN" | "GRIZZLE" | "HAMSTER" | "MONKEY";
 
 // user_caro_stats
 export const userCaroStats = pgTable("user_caro_stats", {
