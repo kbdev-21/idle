@@ -47,7 +47,7 @@ export default function ProfileDialog({ userId, open, onOpenChange }: ProfileDia
             <Spinner className="size-8 text-muted-foreground" />
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-3 pt-2">
+          <div className="flex w-full min-w-0 flex-col items-center gap-3 pt-2">
             {/* avatar top center; click để đổi (chỉ khi là chính mình) */}
             <button
               type="button"
@@ -133,7 +133,7 @@ function MatchHistory({ matches, userId }: { matches: CaroMatchSummary[]; userId
   }
 
   return (
-    <div className="max-h-72 w-full space-y-2 overflow-y-auto pt-3">
+    <div className="max-h-72 w-full min-w-0 space-y-2 overflow-y-auto pt-3">
       {matches.map((match) => (
         <MatchHistoryItem key={match.id} match={match} userId={userId} />
       ))}
@@ -167,7 +167,7 @@ function MatchHistoryItem({ match, userId }: { match: CaroMatchSummary; userId: 
       className="flex w-full items-center gap-4 rounded-lg border border-gray-200 px-3 py-3 text-left transition-colors duration-100 hover:bg-gray-50"
     >
       {/* col 1: (kết quả + delta cùng hàng), date bên dưới */}
-      <div className="flex w-24 shrink-0 flex-col gap-1">
+      <div className="flex shrink-0 flex-col gap-1 sm:w-24">
         <div className="flex items-baseline gap-1.5">
           <span className={cn("text-sm font-bold", resultColor)}>{resultLabel}</span>
           {deltaText && <span className={cn("text-xs font-semibold", resultColor)}>({deltaText})</span>}
@@ -176,7 +176,7 @@ function MatchHistoryItem({ match, userId }: { match: CaroMatchSummary; userId: 
       </div>
 
       {/* col 2: 2 player dọc */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <PlayerLine player={match.xPlayer} rating={match.xRating} />
         <PlayerLine player={match.oPlayer} rating={match.oRating} />
       </div>
@@ -186,7 +186,7 @@ function MatchHistoryItem({ match, userId }: { match: CaroMatchSummary; userId: 
 
 function PlayerLine({ player, rating }: { player: User; rating: number }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <div className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-100 text-xs">
         {AVATARS[player.avtCode] ? (
           <img src={AVATARS[player.avtCode]} alt={player.name} className="h-full w-full object-cover" />
@@ -194,8 +194,8 @@ function PlayerLine({ player, rating }: { player: User; rating: number }) {
           "🐝"
         )}
       </div>
-      <span className="text-sm font-semibold">{player.name}</span>
-      <span className="text-xs text-muted-foreground">({rating})</span>
+      <span className="truncate text-sm font-semibold">{player.name}</span>
+      <span className="shrink-0 text-xs text-muted-foreground">({rating})</span>
     </div>
   )
 }
