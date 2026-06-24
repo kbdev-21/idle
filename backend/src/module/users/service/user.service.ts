@@ -14,7 +14,7 @@ const userFullQuery = db.query.users.findFirst({
   with: userFullRelations
 });
 
-export type User = Awaited<NonNullable<typeof userFullQuery>>;
+export type User = NonNullable<Awaited<typeof userFullQuery>>;
 
 export async function getUserById(id: string): Promise<User> {
   const user = await db.query.users.findFirst({
@@ -55,7 +55,7 @@ export async function updateUserById(id: string, updateRequest: UpdateUserReques
   return await getUserById(id);
 }
 
-export async function syncUser(userId: string, isAnonymous: boolean, email?: string): Promise<User> {
+export async function syncUserWithAuthData(userId: string, isAnonymous: boolean, email?: string): Promise<User> {
   const existingUser = await db.query.users.findFirst({
     where: {
       id: userId,

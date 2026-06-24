@@ -25,8 +25,8 @@ const caroMatchSummaryQuery = db.query.caroMatches.findFirst({
   }
 });
 
-export type CaroMatchDbDetail = Awaited<NonNullable<typeof caroMatchDetailQuery>>;
-export type CaroMatchDbSummary = Awaited<NonNullable<typeof caroMatchSummaryQuery>>;
+export type CaroMatchDbDetail = NonNullable<Awaited<typeof caroMatchDetailQuery>>;
+export type CaroMatchDbSummary = NonNullable<Awaited<typeof caroMatchSummaryQuery>>;
 
 export async function getCaroMatchById(id: string): Promise<CaroMatchDbDetail> {
   const match = await db.query.caroMatches.findFirst({

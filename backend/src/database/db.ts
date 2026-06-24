@@ -5,9 +5,10 @@ import {relations} from "./schema.js";
 export const db = drizzle({
   connection: {
     connectionString: process.env.POSTGRES_CONNECTION_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    }
+    // ssl: {
+    //   rejectUnauthorized: false,
+    // },
+    ssl: false
   },
   relations: relations
 });

@@ -7,7 +7,7 @@ export const allowUserTypesMiddleware = (allowedUserTypes: UserType[]) =>
   createMiddleware(async (c, next) => {
     const currentUser: User | null = c.get("currentUser");
     if(!currentUser) {
-      throw new HTTPException(500, { message: "Dev: allowUserTypesMiddleware used without/before authMiddleware" });
+      throw new Error("allowUserTypesMiddleware used without/before authMiddleware");
     }
     const currentUserType = currentUser.type;
     if(!allowedUserTypes.includes(currentUserType)) {
